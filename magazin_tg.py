@@ -28,8 +28,23 @@ def send_welcome(message):
     commatd_list = ['/help - помощь по командам чата',
                     '/start - приветствие бота',
                     '/buy + <товар> - положить <товар> в корзину',
-                    '/cart - вывести список покупок']
+                    '/cart - вывести список покупок',
+                    '/id - id пользователя']
     bot.send_message(message.chat.id, '\n '.join(commatd_list))
+    print(user_id, user_message)  # подглядывание
+
+
+@bot.message_handler(commands=['id'])
+def send_welcome(message):
+    """
+    Функция здоровается с пользователем при вводе команд 'start', 'help'
+    :param message: сообщение от пользователя
+    :return:
+    """
+    user_message = message.text
+    user_id = message.chat.id
+    answer_message = 'Ваш ID: ' + str(user_id)
+    bot.send_message(message.chat.id, answer_message)
     print(user_id, user_message)  # подглядывание
 
 
