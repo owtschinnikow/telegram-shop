@@ -84,8 +84,8 @@ def send_welcome(message):
     bot.send_message(message.chat.id, answer_message)
     print(user_id, message.chat.first_name, user_message)  # подглядывание
 
-cart = {}  # База данных заказов пользователей с товарами. Словарь {user_id: [item1, item2], ...}
 
+cart = {}  # База данных заказов пользователей с товарами. Словарь {user_id: [item1, item2], ...}
 @bot.message_handler(commands=['buy'])
 def buy_item(message):
     """
@@ -100,22 +100,18 @@ def buy_item(message):
         answer_message = 'Введите нужный товар после команды /buy'
         return bot.send_message(user_id, answer_message), print(user_id, message.chat.first_name, answer_message)
     item = parsed_message[1]
-
     # Проверяем, что товар есть в каталоге
     if item not in warehouse:
         answer_message = 'Товар ' + item + ' не продается, увы :('
         bot.send_message(message.chat.id, answer_message)
         return  print(user_id, message.chat.first_name, 'надо начать заказывать', item)
-
     # Проверяем, что товара достатоно на складе
     if warehouse[item].quantity <= 0:
         answer_message = 'Товар ' + item + ' закончился, скоро привезем!'
         bot.send_message(message.chat.id, answer_message)
         return  print(user_id, message.chat.first_name, 'надо заказать', item)
-
     # Все ок: уменьшаем число товаров на складе и добавляем его в корзину пользователя
     warehouse[item].decrease()
-
     if user_id not in cart:
         cart[user_id] = []
     cart[user_id].append(item)
@@ -141,13 +137,40 @@ def show_cart(message):
     print(user_id, message.chat.first_name, user_message)  # подглядывание
 
 
+@bot.message_handler(commands=['add'])
+def show_warehouse(message):
+    user_message = message.text
+    user_id = message.chat.id
+    parsed_message = user_message.split()
+    if len(parsed_message) < 2:
+        answer_message = 'После команды /add введите - название, количество, категорию'
+        return bot.send_message(user_id, answer_message), print(user_id, message.chat.first_name, answer_message)
+    item = parsed_message[1]
+    # Если товара НЕТ в каталоге, то вставляем полную позицию - название, количество, категорию
+    if len(parsed_message) == 4 and item not in warehouse:
+        quantity = int(parsed_message[2])
+        category = parsed_message[3]
+        warehouse[item] = Item(item, quantity, category)
+        show_warehouse(message)
+        return  print(user_id, message.chat.first_name, 'добавлена позиция', item, quantity, category)
+    # Если товара ЕСТЬ в каталоге
+    # Количество ЕСТЬ, то увеличиваем на КОЛИЧЕСТВО.
+    if item in warehouse:
+        if len(parsed_message) == 3:
+            quantity = int(parsed_message[2])
+            warehouse[item].quantity += quantity
+    #Количества нет, то увеличиваем на 1 шт.
+        elif len(parsed_message) == 2:
+            warehouse[item].increase()
+
+    show_warehouse(message)
 
 @bot.message_handler(commands=['warehouse'])
 def show_warehouse(message):
     user_id = message.chat.id
     bot.send_message(user_id, 'Cостояние склада:')
     for k, v in warehouse.items():
-        slot = (k, str(v.quantity))
+        slot = (k, str(v.quantity), str(v.category))
         warehouse_slot = ' - '.join(slot)
         bot.send_message(user_id, warehouse_slot)
 
