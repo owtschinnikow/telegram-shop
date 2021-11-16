@@ -19,6 +19,10 @@ class Item:
         self.category = category
 
     def decrease(self):
+        """
+        Уменьшение позиции уменьшением на 1
+        :return:
+        """
         if self.quantity == 0:
             return 'fail'
         else:
@@ -26,8 +30,25 @@ class Item:
             return self.quantity
 
     def increase(self):
+        """
+        Добавление позиции увеличением на 1
+        :return:
+        """
         self.quantity = self.quantity + 1
         return self.quantity
+
+
+class Customer:
+    """
+    Класс для предоставления бонуса клиенту
+    """
+    def __init__(self, name='noname', bought_items=0, bonuses=0):
+        self.name = name
+        self.bought_items = bought_items
+        self.bonuses = bonuses
+
+
+
 
 
 # База данных склада с товарами. Словарь {product: [item1, item2, item3], ...}
