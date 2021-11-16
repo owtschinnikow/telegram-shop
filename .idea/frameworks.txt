@@ -1,0 +1,8 @@
+Возможные библиотеки:
+AIOGram
+python-telegram-bot
+Telepot
+Telegram Bot Service
+telebot
+twx.botapi
+pyTelegramBotAPI

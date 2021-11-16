@@ -1,19 +1,39 @@
 import telebot
-from token_code import TOKEN
-
-"""
-Возможные библиотеки
-AIOGram
-python-telegram-bot
-Telepot
-Telegram Bot Service
-telebot
-twx.botapi
-pyTelegramBotAPI
-"""
+try:
+    from token_code import TOKEN
+except:
+    print('Извините, у вас нет доступа к токену спикера.')
+    print('Сгенерируйте свой с помощью @BotFather и вставьте в следующую ячейку.')
 
 
 bot = telebot.TeleBot(TOKEN)  # Инициализация определённого бота по TOKEN
+
+
+class Item:
+    """
+    Класс для определения продуктов, количества и категорий в боте
+    """
+    def __init__(self, name='noname', quantity=0, category='unknown'):
+        self.name = name
+        self.quantity = quantity
+        self.category = category
+
+    def decrease(self):
+        if self.quantity == 0:
+            return 'fail'
+        else:
+            self.quantity = self.quantity - 1
+            return self.quantity
+
+    def increase(self):
+        self.quantity = self.quantity + 1
+        return self.quantity
+
+
+# База данных склада с товарами. Словарь {product: [item1, item2, item3], ...}
+warehouse = {'milk': Item('milk', 2, 'food'),
+         'bread': Item('bread', 2, 'food'),
+         'bear': Item('bear', 1, 'toys')}
 
 
 @bot.message_handler(commands=['help'])
@@ -57,11 +77,14 @@ def send_welcome(message):
     """
     user_message = message.text
     user_id = message.chat.id
-    bot.send_message(message.chat.id, "Hello! Делайте заказы!")
+    user_name = message.from_user.first_name
+    if user_name is None:
+        user_name = '<Скрытный пользователь :)>'
+    answer_message = 'Hello, ' + user_name + 'Делайте заказы!'
+    bot.send_message(message.chat.id, answer_message)
     print(user_id, message.chat.first_name, user_message)  # подглядывание
 
-
-cart = {}
+cart = {}  # База данных заказов пользователей с товарами. Словарь {user_id: [item1, item2], ...}
 
 @bot.message_handler(commands=['buy'])
 def buy_item(message):
@@ -73,17 +96,36 @@ def buy_item(message):
     user_message = message.text
     user_id = message.chat.id
     parsed_message = user_message.split()
+    if len(parsed_message) == 1:
+        answer_message = 'Введите нужный товар после команды /buy'
+        return bot.send_message(user_id, answer_message), print(user_id, message.chat.first_name, answer_message)
     item = parsed_message[1]
+
+    # Проверяем, что товар есть в каталоге
+    if item not in warehouse:
+        answer_message = 'Товар ' + item + ' не продается, увы :('
+        bot.send_message(message.chat.id, answer_message)
+        return  print(user_id, message.chat.first_name, 'надо начать заказывать', item)
+
+    # Проверяем, что товара достатоно на складе
+    if warehouse[item].quantity <= 0:
+        answer_message = 'Товар ' + item + ' закончился, скоро привезем!'
+        bot.send_message(message.chat.id, answer_message)
+        return  print(user_id, message.chat.first_name, 'надо заказать', item)
+
+    # Все ок: уменьшаем число товаров на складе и добавляем его в корзину пользователя
+    warehouse[item].decrease()
+
     if user_id not in cart:
         cart[user_id] = []
     cart[user_id].append(item)
-    answer_message = ('Товар ' + item + ' добавлен в корзину для ')
+    answer_message = ('Товар - ' + item + ' - добавлен в корзину для ')
     bot.send_message(user_id, answer_message)
     print(user_id, message.chat.first_name, user_message)  # подглядывание
 
 
 @bot.message_handler(commands=['cart'])
-def buy_item(message):
+def show_cart(message):
     """
     Функция сообщает список покупок в корзине
     :param message: сообщение от пользователя
@@ -91,10 +133,24 @@ def buy_item(message):
     """
     user_message = message.text
     user_id = message.chat.id
+    if user_id not in cart:
+        cart[user_id] = []
     items = cart[user_id]
     answer_message = (str(message.chat.first_name) + '. Ваша корзина: ' + ', '.join(items) )
     bot.send_message(user_id, answer_message)
     print(user_id, message.chat.first_name, user_message)  # подглядывание
+
+
+
+@bot.message_handler(commands=['warehouse'])
+def show_warehouse(message):
+    user_id = message.chat.id
+    bot.send_message(user_id, 'Cостояние склада:')
+    for k, v in warehouse.items():
+        slot = (k, str(v.quantity))
+        warehouse_slot = ' - '.join(slot)
+        bot.send_message(user_id, warehouse_slot)
+
 
 @bot.message_handler(commands=[''])
 def admin_function(message):
