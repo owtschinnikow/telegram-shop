@@ -72,9 +72,8 @@ cart_plus_sale = {'user_1':User('user_1', 10, 0),
                   'user_3':User('user_1', 10, 0),}
 
 
-
-cart = {}  # База данных заказов пользователей с товарами. Словарь {user_id: [item1, item2], ...}
-
+# База данных заказов пользователей с товарами. Словарь {user_id: [item1, item2], ...}
+cart = {}
 
 # База данных склада с товарами. Словарь {product: [item1, item2, item3], ...}
 warehouse = {'milk': Item('milk', 2, 'food'),
@@ -129,7 +128,6 @@ def send_welcome(message):
     answer_message = 'Hello, ' + user_name + 'Делайте заказы!'
     bot.send_message(message.chat.id, answer_message)
     print(user_id, message.chat.first_name, user_message)  # подглядывание
-
 
 
 @bot.message_handler(commands=['buy'])
@@ -210,6 +208,7 @@ def show_warehouse(message):
             warehouse[item].increase()
 
     show_warehouse(message)
+
 
 @bot.message_handler(commands=['warehouse'])
 def show_warehouse(message):
