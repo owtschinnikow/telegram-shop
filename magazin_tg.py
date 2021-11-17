@@ -38,17 +38,42 @@ class Item:
         return self.quantity
 
 
-class Customer:
+class User:
     """
     Класс для предоставления бонуса клиенту
     """
+    sale_0, sale_1, sale_2, sale_3, sale_4 = 0, 10, 20, 30, 40
+
     def __init__(self, name='noname', bought_items=0, bonuses=0):
         self.name = name
         self.bought_items = bought_items
         self.bonuses = bonuses
 
+    def call_sale(self):
+        """
+        Расчёт скидки
+        :return:
+        """
+        if 0 <= self.bought_items < 5:
+            self.bonuses = self.sale_0
+        if 5 <= self.bought_items < 10:
+            self.bonuses = self.sale_1
+        if 15 <= self.bought_items < 20:
+            self.bonuses = self.sale_2
+        if 20 <= self.bought_items < 25:
+            self.bonuses = self.sale_3
+        if 25 <= self.bought_items < 30:
+            self.bonuses = self.sale_4
 
 
+# словарь вида {'user_1': User(), 'user_2': User(), ...}, с списки купленных товаров поместим внутрь них.
+cart_plus_sale = {'user_1':User('user_1', 10, 0),
+                  'user_2':User('user_1', 10, 0),
+                  'user_3':User('user_1', 10, 0),}
+
+
+
+cart = {}  # База данных заказов пользователей с товарами. Словарь {user_id: [item1, item2], ...}
 
 
 # База данных склада с товарами. Словарь {product: [item1, item2, item3], ...}
@@ -106,7 +131,7 @@ def send_welcome(message):
     print(user_id, message.chat.first_name, user_message)  # подглядывание
 
 
-cart = {}  # База данных заказов пользователей с товарами. Словарь {user_id: [item1, item2], ...}
+
 @bot.message_handler(commands=['buy'])
 def buy_item(message):
     """
