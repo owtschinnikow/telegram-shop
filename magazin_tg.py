@@ -94,7 +94,9 @@ def send_welcome(message):
                     '/start - приветствие бота',
                     '/buy + <товар> - положить <товар> в корзину',
                     '/cart - вывести список покупок',
-                    '/id - id пользователя']
+                    '/id - id пользователя',
+                    '/warehouse - состояние склада',
+                    '/add - добавление товаров на склад']
     bot.send_message(message.chat.id, '\n '.join(commatd_list))
     print(user_id, message.chat.first_name, user_message)  # подглядывание
 
@@ -182,7 +184,12 @@ def show_cart(message):
 
 
 @bot.message_handler(commands=['add'])
-def show_warehouse(message):
+def add_warehouse(message):
+    """
+    Функция для добавление товаров на склад
+    :param message:
+    :return:
+    """
     user_message = message.text
     user_id = message.chat.id
     parsed_message = user_message.split()
@@ -212,6 +219,11 @@ def show_warehouse(message):
 
 @bot.message_handler(commands=['warehouse'])
 def show_warehouse(message):
+    """
+    Функция показывает состояние склада
+    :param message:
+    :return:
+    """
     user_id = message.chat.id
     bot.send_message(user_id, 'Cостояние склада:')
     for k, v in warehouse.items():
@@ -222,6 +234,11 @@ def show_warehouse(message):
 
 @bot.message_handler(commands=[''])
 def admin_function(message):
+    """
+    Функция заготовка для администрирования
+    :param message:
+    :return:
+    """
     user_id = message.chat.id
     bot.send_message(user_id, message.chat.first_name)
     bot.send_message(user_id, message)
